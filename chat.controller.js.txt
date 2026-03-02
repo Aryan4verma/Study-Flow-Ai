@@ -1,0 +1,61 @@
+import axios from 'axios';
+import { db } from '../config/firebase.js';
+
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+
+const SYSTEM_PROMPT = `You are an expert academic tutor AI. Explain everything in simple student language. Format answers for exam writing. Use headings, bullet points, tables, formulas, and examples. Avoid unnecessary complexity.`;
+
+export const handleChat = async (req, res) => {
+  try {
+    const { userId, message, mode, chatId } = req.body;
+
+    // Construct specific prompt based on mode
+    let userPrompt = message;
+    if (mode === 'notes') {
+      userPrompt = `Convert this content into structured exam-ready short notes. Include headings, subheadings, bullet points, formulas, and examples: \n\n${message}`;
+    } else if (mode === 'summary') {
+      userPrompt = `Summarize the following content in simple student-friendly language: \n\n${message}`;
+    } else if (mode === 'questions') {
+      userPrompt = `Extract the 10 most important exam questions from the content: \n\n${message}`;
+    } else if (mode === 'explain') {
+      userPrompt = `Explain this concept step-by-step as if teaching a beginner: \n\n${message}`;
+    }
+
+    // Call OpenRouter (Free Tier)
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: 'openchat/openchat-3.5-1210', // Free model
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const aiResponse = response.data.choices[0].message.content;
+
+    // Save to Firestore History
+    const historyRef = db.collection('history').doc(chatId || Date.now().toString());
+    await historyRef.set({
+      userId,
+      title: message.substring(0, 50) + '...',
+      messages: [
+        { role: 'user', content: message, timestamp: new Date() },
+        { role: 'assistant', content: aiResponse, timestamp: new Date() },
+      ],
+      updatedAt: new Date(),
+    }, { merge: true });
+
+    res.json({ success: true, response: aiResponse });
+  } catch (error) {
+    console.error('Chat Error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'AI processing failed' });
+  }
+};

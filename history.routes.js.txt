@@ -1,0 +1,13 @@
+// /backend/routes/history.routes.js
+
+import express from 'express';
+import { getHistory } from '../controllers/history.controller.js';
+
+const router = express.Router();
+
+// GET /api/history/:userId
+// Example: /api/history/abc123
+// Backend responds: { success: true, history: [...chats] }
+router.get('/:userId', getHistory);
+
+export default router;

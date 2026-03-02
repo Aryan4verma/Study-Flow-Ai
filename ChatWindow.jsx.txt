@@ -1,0 +1,63 @@
+import ReactMarkdown from 'react-markdown';
+import { motion } from 'framer-motion';
+import { FaRobot, FaUser } from 'react-icons/fa';
+
+export default function ChatWindow({ messages, isLoading }) {
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50 dark:bg-gray-900">
+      {messages.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <FaRobot size={48} className="mb-4 opacity-50" />
+          <p className="text-lg">Upload a PDF or ask a question to get started</p>
+        </div>
+      )}
+
+      {messages.map((msg, idx) => (
+        <motion.div
+          key={idx}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+        >
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            msg.role === 'user' ? 'bg-blue-600' : 'bg-green-600'
+          }`}>
+            {msg.role === 'user' ? <FaUser className="text-white text-sm" /> : <FaRobot className="text-white text-sm" />}
+          </div>
+          
+          <div className={`max-w-[80%] p-4 rounded-2xl ${
+            msg.role === 'user' 
+              ? 'bg-blue-600 text-white rounded-tr-none' 
+              : 'bg-white dark:bg-gray-800 shadow-sm border dark:border-gray-700 rounded-tl-none'
+          }`}>
+            <ReactMarkdown className="prose dark:prose-invert prose-sm max-w-none">
+              {msg.content}
+            </ReactMarkdown>
+          </div>
+        </motion.div>
+      ))}
+      
+      {isLoading && (
+        <div className="flex gap-4">
+          <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
+            <FaRobot className="text-white text-sm" />
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl rounded-tl-none shadow-sm border dark:border-gray-700">
+            <div className="flex gap-1">
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></span>
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></span>
+            </div>
+          </div>
+        </div>
+      )}
+      <div ref={bottomRef} />
+    </div>
+  );
+}

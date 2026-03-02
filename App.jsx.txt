@@ -1,0 +1,26 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import PrivateRoute from './components/PrivateRoute';
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <div className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;

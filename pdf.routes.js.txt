@@ -1,0 +1,17 @@
+// /backend/routes/pdf.routes.js
+
+import express from 'express';
+import multer from 'multer';
+import { uploadPdf } from '../controllers/pdf.controller.js';
+
+const router = express.Router();
+
+// Setup multer to handle file uploads (stores in memory, not disk)
+const upload = multer({ storage: multer.memoryStorage() });
+
+// POST /api/pdf/upload-pdf
+// Frontend sends: FormData with pdf_file and userId
+// Backend responds: { success: true, pdfId, textPreview, fullText }
+router.post('/upload-pdf', upload.single('pdf_file'), uploadPdf);
+
+export default router;

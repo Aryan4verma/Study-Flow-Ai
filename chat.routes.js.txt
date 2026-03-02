@@ -1,0 +1,13 @@
+// /backend/routes/chat.routes.js
+
+import express from 'express';
+import { handleChat } from '../controllers/chat.controller.js';
+
+const router = express.Router();
+
+// POST /api/chat
+// Frontend sends: { userId, message, mode, chatId }
+// Backend responds: { success: true, response: "AI answer here" }
+router.post('/', handleChat);
+
+export default router;
